@@ -593,6 +593,7 @@ describe("permissive validation", () => {
     const result = validateGraph(validGraph);
     expect(result.success).toBe(true);
     expect(result.issues).toEqual([]);
+    expect(result.errors).toBeUndefined();
   });
 
   it("auto-corrects and loads graph that would have failed strict validation", () => {
@@ -633,5 +634,31 @@ describe("permissive validation", () => {
     expect(result.issues).toContainEqual(
       expect.objectContaining({ level: "auto-corrected", category: "type-coercion" })
     );
+  });
+
+  it("returns fatal when edges is present but not an array", () => {
+    const graph = structuredClone(validGraph) as any;
+    graph.edges = { source: "node-1", target: "node-1" };
+
+    const result = validateGraph(graph);
+    expect(result.success).toBe(false);
+    expect(result.fatal).toContain('"edges" must be an array');
+    expect(result.errors).toContain('"edges" must be an array when present');
+    expect(result.issues).toContainEqual(
+      expect.objectContaining({
+        level: "fatal",
+        category: "invalid-collection",
+        path: "edges",
+      })
+    );
+  });
+
+  it("preserves deprecated errors for dropped-item callers", () => {
+    const graph = structuredClone(validGraph);
+    graph.edges[0].target = "non-existent-node";
+
+    const result = validateGraph(graph);
+    expect(result.success).toBe(true);
+    expect(result.errors).toContain('edges[0]: target "non-existent-node" does not exist in nodes — removed');
   });
 });

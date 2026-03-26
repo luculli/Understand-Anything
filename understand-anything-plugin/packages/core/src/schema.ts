@@ -328,8 +328,25 @@ export interface GraphIssue {
 export interface ValidationResult {
   success: boolean;
   data?: z.infer<typeof KnowledgeGraphSchema>;
+  /** @deprecated Use issues/fatal instead */
+  errors?: string[];
   issues: GraphIssue[];
   fatal?: string;
+}
+
+function buildInvalidCollectionIssue(name: string): GraphIssue {
+  return {
+    level: "fatal",
+    category: "invalid-collection",
+    message: `"${name}" must be an array when present`,
+    path: name,
+  };
+}
+
+function buildErrors(issues: GraphIssue[], fatal?: string): string[] | undefined {
+  const messages = issues.map((issue) => issue.message);
+  if (fatal && !messages.includes(fatal)) messages.unshift(fatal);
+  return messages.length > 0 ? messages : undefined;
 }
 
 export function normalizeGraph(data: unknown): unknown {
@@ -372,7 +389,8 @@ export function normalizeGraph(data: unknown): unknown {
 export function validateGraph(data: unknown): ValidationResult {
   // Tier 4: Fatal — not even an object
   if (typeof data !== "object" || data === null) {
-    return { success: false, issues: [], fatal: "Invalid input: not an object" };
+    const fatal = "Invalid input: not an object";
+    return { success: false, issues: [], fatal, errors: buildErrors([], fatal) };
   }
 
   const raw = data as Record<string, unknown>;
@@ -386,11 +404,27 @@ export function validateGraph(data: unknown): ValidationResult {
   // Tier 2: Auto-fix defaults and coercion
   const { data: fixed, issues } = autoFixGraph(normalized);
 
+  // Tier 4: Fatal — malformed top-level collections
+  const requiredCollections = ["nodes", "edges", "layers", "tour"] as const;
+  for (const collection of requiredCollections) {
+    if (collection in fixed && fixed[collection] !== undefined && !Array.isArray(fixed[collection])) {
+      const issue = buildInvalidCollectionIssue(collection);
+      issues.push(issue);
+      return {
+        success: false,
+        errors: buildErrors(issues, issue.message),
+        issues,
+        fatal: issue.message,
+      };
+    }
+  }
+
   // Tier 4: Fatal — missing project metadata
   const projectResult = ProjectMetaSchema.safeParse(fixed.project);
   if (!projectResult.success) {
     return {
       success: false,
+      errors: buildErrors(issues, "Missing or invalid project metadata"),
       issues,
       fatal: "Missing or invalid project metadata",
     };
@@ -420,6 +454,7 @@ export function validateGraph(data: unknown): ValidationResult {
   if (validNodes.length === 0) {
     return {
       success: false,
+      errors: buildErrors(issues, "No valid nodes found in knowledge graph"),
       issues,
       fatal: "No valid nodes found in knowledge graph",
     };
@@ -514,5 +549,5 @@ export function validateGraph(data: unknown): ValidationResult {
     tour: validTour,
   };
 
-  return { success: true, data: graph, issues };
+  return { success: true, data: graph, issues, errors: buildErrors(issues) };
 }
