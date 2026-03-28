@@ -43,13 +43,21 @@ export function classifyUpdate(
   }
 
   // Too many structural changes — suggest full rebuild
-  if (structuralCount > 30 || (totalFilesInGraph > 0 && structuralCount / totalFilesInGraph > 0.5)) {
+  const triggeredByCount = structuralCount > 30;
+  const triggeredByPercentage = totalFilesInGraph > 0 && structuralCount / totalFilesInGraph > 0.5;
+  if (triggeredByCount || triggeredByPercentage) {
+    const thresholdReason =
+      triggeredByCount && triggeredByPercentage
+        ? ">30 files and >50% of project"
+        : triggeredByCount
+          ? ">30 files"
+          : ">50% of project";
     return {
       action: "FULL_UPDATE",
       filesToReanalyze: [...structurallyChangedFiles, ...newFiles],
       rerunArchitecture: true,
       rerunTour: true,
-      reason: `${structuralCount} files have structural changes (>${totalFilesInGraph > 0 ? "50% of project" : "30 files"}) — full rebuild recommended`,
+      reason: `${structuralCount} files have structural changes (${thresholdReason}) — full rebuild recommended`,
     };
   }
 

@@ -482,34 +482,15 @@ Pass these parameters in the dispatch prompt:
 
 2.5. **Generate structural fingerprints** for all analyzed files and save to `$PROJECT_ROOT/.understand-anything/fingerprints.json`. This creates the baseline for future automatic incremental updates.
 
-   Write and execute a Node.js script that:
-   1. Reads each source file path from the scan results (Phase 1)
-   2. For each file: computes a SHA-256 content hash, then extracts function/class/import/export declarations via regex matching:
-      - Functions: `function NAME(`, `const NAME = (`, `export function NAME(`, arrow functions assigned to const/let
-      - Classes: `class NAME`, `export class NAME`
-      - Imports: `import ... from '...'`, `import '...'`
-      - Exports: `export { ... }`, `export default`, `export function`, `export class`, `export const`
-   3. For each function: record name, parameter names, whether exported, and line count
-   4. For each class: record name, method names, property names, whether exported
-   5. Writes the fingerprint store JSON to `$PROJECT_ROOT/.understand-anything/fingerprints.json`:
-      ```json
-      {
-        "version": "1.0.0",
-        "gitCommitHash": "<commit hash>",
-        "generatedAt": "<ISO timestamp>",
-        "files": {
-          "<filePath>": {
-            "filePath": "<filePath>",
-            "contentHash": "<sha256>",
-            "functions": [{ "name": "...", "params": ["..."], "exported": true, "lineCount": 35 }],
-            "classes": [{ "name": "...", "methods": ["..."], "properties": ["..."], "exported": true, "lineCount": 50 }],
-            "imports": [{ "source": "...", "specifiers": ["..."] }],
-            "exports": ["name1", "name2"],
-            "totalLines": 120
-          }
-        }
-      }
-      ```
+   Write and execute a Node.js script that uses the core fingerprint module (tree-sitter-based, not regex):
+   ```javascript
+   import { buildFingerprintStore } from '@understand-anything/core';
+   import { saveFingerprints } from '@understand-anything/core';
+
+   const store = await buildFingerprintStore('<PROJECT_ROOT>', sourceFilePaths);
+   saveFingerprints('<PROJECT_ROOT>', store);
+   ```
+   Where `sourceFilePaths` is the list of all analyzed source file paths from Phase 1. This uses the same tree-sitter analysis pipeline as the main fingerprint engine, ensuring the baseline matches the comparison logic used during auto-updates.
 
 3. Clean up intermediate files:
    ```bash

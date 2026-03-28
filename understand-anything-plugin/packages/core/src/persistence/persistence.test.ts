@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { writeFileSync } from "node:fs";
-import { saveGraph, loadGraph, saveMeta, loadMeta, saveFingerprints, loadFingerprints } from "./index.js";
+import { saveGraph, loadGraph, saveMeta, loadMeta, saveFingerprints, loadFingerprints, saveConfig, loadConfig } from "./index.js";
 import type { KnowledgeGraph, AnalysisMeta } from "../types.js";
 import type { FingerprintStore } from "../fingerprint.js";
 
@@ -157,6 +157,30 @@ describe("persistence", () => {
 
       const loaded = loadFingerprints(tempDir);
       expect(loaded).toBeNull();
+    });
+  });
+
+  describe("saveConfig / loadConfig", () => {
+    it("should round-trip config correctly", () => {
+      saveConfig(tempDir, { autoUpdate: true });
+      const loaded = loadConfig(tempDir);
+
+      expect(loaded).toEqual({ autoUpdate: true });
+    });
+
+    it("should return default config when no file exists", () => {
+      const loaded = loadConfig(tempDir);
+
+      expect(loaded).toEqual({ autoUpdate: false });
+    });
+
+    it("should return default config when config.json is corrupted", () => {
+      saveConfig(tempDir, { autoUpdate: true });
+      const dir = join(tempDir, ".understand-anything");
+      writeFileSync(join(dir, "config.json"), "not json!!", "utf-8");
+
+      const loaded = loadConfig(tempDir);
+      expect(loaded).toEqual({ autoUpdate: false });
     });
   });
 });
