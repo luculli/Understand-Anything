@@ -178,4 +178,17 @@ describe("PluginRegistry", () => {
     const result = registry.resolveImports("main.py", "import os");
     expect(result).toBeNull();
   });
+
+  it("handles plugins with optional resolveImports (non-code plugins)", () => {
+    const markdownPlugin: AnalyzerPlugin = {
+      name: "markdown",
+      languages: ["markdown"],
+      analyzeFile: () => ({ functions: [], classes: [], imports: [], exports: [] }),
+      // No resolveImports — optional for non-code plugins
+    };
+    const registry = new PluginRegistry();
+    registry.register(markdownPlugin);
+    const result = registry.resolveImports("README.md", "# Hello");
+    expect(result).toBeNull();
+  });
 });
