@@ -138,6 +138,15 @@ Fetch and follow instructions from https://raw.githubusercontent.com/Lum1104/Und
 
 Cursor auto-discovers the plugin via `.cursor-plugin/plugin.json` when this repo is cloned. No manual installation needed — just clone and open in Cursor.
 
+### VS Code + GitHub Copilot
+
+VS Code with GitHub Copilot (v1.108+) auto-discovers the plugin via `.copilot-plugin/plugin.json` when this repo is cloned. No manual installation needed — just clone and open in VS Code.
+
+For personal skills (available across all projects), tell GitHub Copilot:
+```text
+Fetch and follow instructions from https://raw.githubusercontent.com/Lum1104/Understand-Anything/refs/heads/main/.vscode/INSTALL.md
+```
+
 ### Antigravity
 
 Tell Antigravity:
@@ -168,6 +177,7 @@ Fetch and follow instructions from https://raw.githubusercontent.com/Lum1104/Und
 | OpenCode | ✅ Supported | AI-driven install |
 | OpenClaw | ✅ Supported | AI-driven install |
 | Cursor | ✅ Supported | Auto-discovery |
+| VS Code + GitHub Copilot | ✅ Supported | Auto-discovery |
 | Antigravity | ✅ Supported | AI-driven install |
 | Gemini CLI | ✅ Supported | AI-driven install |
 | Pi Agent | ✅ Supported | AI-driven install |

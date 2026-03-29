@@ -137,6 +137,15 @@ Fetch and follow instructions from https://raw.githubusercontent.com/Lum1104/Und
 
 克隆此仓库后，Cursor 会自动通过 `.cursor-plugin/plugin.json`文件发现插件。无需手动安装 — 只需克隆并在 Cursor 中打开即可。
 
+### VS Code + GitHub Copilot
+
+安装 GitHub Copilot 扩展（v1.108+）后，VS Code 会通过 `.copilot-plugin/plugin.json` 自动发现插件，克隆后直接在 VS Code 中打开即可，无需手动安装。
+
+若需要在所有项目中使用（个人技能），告诉 GitHub Copilot：
+```text
+Fetch and follow instructions from https://raw.githubusercontent.com/Lum1104/Understand-Anything/refs/heads/main/.vscode/INSTALL.md
+```
+
 ### Antigravity
 
 告诉 Antigravity:
@@ -167,6 +176,7 @@ Fetch and follow instructions from https://raw.githubusercontent.com/Lum1104/Und
 | OpenCode | ✅ 支持 | AI驱动安装 |
 | OpenClaw | ✅ 支持 | AI驱动安装 |
 | Cursor | ✅ 支持 | 自动发现 |
+| VS Code + GitHub Copilot | ✅ 支持 | 自动发现 |
 | Antigravity | ✅ 支持 | AI驱动安装 |
 | Gemini CLI | ✅ 支持 | AI驱动安装 |
 | Pi Agent | ✅ 支持 | AI驱动安装 |
