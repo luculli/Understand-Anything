@@ -81,41 +81,41 @@ function getDirectionalLabel(edgeType: string, isSource: boolean): string {
 function DomainNodeDetails({ node, graph }: { node: GraphNode; graph: KnowledgeGraph }) {
   const navigateToDomain = useDashboardStore((s) => s.navigateToDomain);
   const selectNode = useDashboardStore((s) => s.selectNode);
-  const meta = (node as any).domainMeta as Record<string, unknown> | undefined;
+  const meta = node.domainMeta;
 
   if (node.type === "domain") {
     const flows = graph.edges
       .filter((e) => e.type === "contains_flow" && e.source === node.id)
       .map((e) => graph.nodes.find((n) => n.id === e.target))
-      .filter(Boolean);
+      .filter((n): n is GraphNode => n !== undefined);
 
     return (
       <div className="space-y-3">
-        {meta?.entities && (meta.entities as string[]).length > 0 ? (
+        {meta?.entities && meta.entities.length > 0 ? (
           <div>
             <h4 className="text-[10px] uppercase tracking-wider text-text-muted mb-1">Entities</h4>
             <div className="flex flex-wrap gap-1">
-              {(meta.entities as string[]).map((e) => (
+              {meta.entities.map((e) => (
                 <span key={e} className="text-[11px] px-2 py-0.5 rounded bg-elevated text-text-secondary">{e}</span>
               ))}
             </div>
           </div>
         ) : null}
-        {meta?.businessRules && (meta.businessRules as string[]).length > 0 ? (
+        {meta?.businessRules && meta.businessRules.length > 0 ? (
           <div>
             <h4 className="text-[10px] uppercase tracking-wider text-text-muted mb-1">Business Rules</h4>
             <ul className="text-[11px] text-text-secondary space-y-1">
-              {(meta.businessRules as string[]).map((r, i) => (
+              {meta.businessRules.map((r, i) => (
                 <li key={i} className="flex gap-1.5"><span className="text-accent shrink-0">-</span>{r}</li>
               ))}
             </ul>
           </div>
         ) : null}
-        {meta?.crossDomainInteractions && (meta.crossDomainInteractions as string[]).length > 0 ? (
+        {meta?.crossDomainInteractions && meta.crossDomainInteractions.length > 0 ? (
           <div>
             <h4 className="text-[10px] uppercase tracking-wider text-text-muted mb-1">Cross-Domain</h4>
             <ul className="text-[11px] text-text-secondary space-y-1">
-              {(meta.crossDomainInteractions as string[]).map((c, i) => (
+              {meta.crossDomainInteractions.map((c, i) => (
                 <li key={i}>{c}</li>
               ))}
             </ul>
@@ -127,12 +127,12 @@ function DomainNodeDetails({ node, graph }: { node: GraphNode; graph: KnowledgeG
             <div className="space-y-1">
               {flows.map((f) => (
                 <button
-                  key={f!.id}
+                  key={f.id}
                   type="button"
-                  onClick={() => { navigateToDomain(node.id); selectNode(f!.id); }}
+                  onClick={() => { navigateToDomain(node.id); selectNode(f.id); }}
                   className="block w-full text-left px-2 py-1.5 rounded bg-elevated hover:bg-accent/10 text-[11px] text-text-secondary hover:text-accent transition-colors"
                 >
-                  {f!.name}
+                  {f.name}
                 </button>
               ))}
             </div>
@@ -147,14 +147,14 @@ function DomainNodeDetails({ node, graph }: { node: GraphNode; graph: KnowledgeG
       .filter((e) => e.type === "flow_step" && e.source === node.id)
       .sort((a, b) => a.weight - b.weight)
       .map((e) => graph.nodes.find((n) => n.id === e.target))
-      .filter(Boolean);
+      .filter((n): n is GraphNode => n !== undefined);
 
     return (
       <div className="space-y-3">
         {meta?.entryPoint ? (
           <div>
             <h4 className="text-[10px] uppercase tracking-wider text-text-muted mb-1">Entry Point</h4>
-            <div className="text-[11px] font-mono text-accent">{meta.entryPoint as string}</div>
+            <div className="text-[11px] font-mono text-accent">{meta.entryPoint}</div>
           </div>
         ) : null}
         {steps.length > 0 && (
@@ -162,14 +162,14 @@ function DomainNodeDetails({ node, graph }: { node: GraphNode; graph: KnowledgeG
             <h4 className="text-[10px] uppercase tracking-wider text-text-muted mb-1">Steps</h4>
             <ol className="space-y-1">
               {steps.map((s, i) => (
-                <li key={s!.id}>
+                <li key={s.id}>
                   <button
                     type="button"
-                    onClick={() => selectNode(s!.id)}
+                    onClick={() => selectNode(s.id)}
                     className="block w-full text-left px-2 py-1.5 rounded bg-elevated hover:bg-accent/10 text-[11px] transition-colors"
                   >
                     <span className="text-accent/60 mr-1.5">{i + 1}.</span>
-                    <span className="text-text-secondary hover:text-accent">{s!.name}</span>
+                    <span className="text-text-secondary hover:text-accent">{s.name}</span>
                   </button>
                 </li>
               ))}
@@ -181,17 +181,16 @@ function DomainNodeDetails({ node, graph }: { node: GraphNode; graph: KnowledgeG
   }
 
   if (node.type === "step") {
+    if (!node.filePath) return null;
     return (
       <div className="space-y-3">
-        {node.filePath && (
-          <div>
-            <h4 className="text-[10px] uppercase tracking-wider text-text-muted mb-1">Implementation</h4>
-            <div className="text-[11px] font-mono text-text-secondary">
-              {node.filePath}
-              {node.lineRange && <span className="text-text-muted">:{node.lineRange[0]}-{node.lineRange[1]}</span>}
-            </div>
+        <div>
+          <h4 className="text-[10px] uppercase tracking-wider text-text-muted mb-1">Implementation</h4>
+          <div className="text-[11px] font-mono text-text-secondary">
+            {node.filePath}
+            {node.lineRange && <span className="text-text-muted">:{node.lineRange[0]}-{node.lineRange[1]}</span>}
           </div>
-        )}
+        </div>
       </div>
     );
   }
@@ -218,7 +217,7 @@ export default function NodeInfo() {
 
   // Resolve history node names for the breadcrumb trail
   const historyNodes = nodeHistory.map((id) => {
-    const n = graph?.nodes.find((gn) => gn.id === id);
+    const n = activeGraph?.nodes.find((gn) => gn.id === id);
     return { id, name: n?.name ?? id };
   });
 
@@ -245,8 +244,8 @@ export default function NodeInfo() {
 
   // Resolve child nodes
   const childNodes = childEdges
-    .map((e) => graph?.nodes.find((n) => n.id === e.target))
-    .filter(Boolean);
+    .map((e) => activeGraph?.nodes.find((n) => n.id === e.target))
+    .filter((n): n is GraphNode => n !== undefined);
 
   const knownType = node.type as NodeType;
   const typeBadge = typeBadgeColors[knownType] ?? typeBadgeColors.file;
