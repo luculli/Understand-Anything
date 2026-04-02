@@ -33,7 +33,7 @@ export const EDGE_CATEGORY_MAP: Record<EdgeCategory, string[]> = {
   semantic: ["related", "similar_to"],
 };
 
-export const DOMAIN_EDGE_TYPES = ["contains_flow", "flow_step", "cross_domain"];
+export const DOMAIN_EDGE_TYPES = ["contains_flow", "flow_step", "cross_domain"] as const;
 
 const DEFAULT_FILTERS: FilterState = {
   nodeTypes: new Set<NodeType>(ALL_NODE_TYPES),
@@ -217,6 +217,9 @@ export const useDashboardStore = create<DashboardStore>()((set, get) => ({
       selectedNodeId: null,
       focusNodeId: null,
       nodeHistory: [],
+      viewMode: "structural" as const,
+      domainGraph: null,
+      activeDomainId: null,
     });
   },
 

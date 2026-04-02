@@ -56,6 +56,7 @@ const NODE_TYPE_TO_CATEGORY: Record<NodeType, NodeCategory> = {
   document: "docs",
   service: "infra", resource: "infra", pipeline: "infra",
   table: "data", endpoint: "data", schema: "data",
+  // Domain types — categorized as "code" for filtering purposes
   domain: "code", flow: "code", step: "code",
 } as const;
 
